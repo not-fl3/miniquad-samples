@@ -13,14 +13,42 @@ audio_register_js_plugin = function (importObject) {
         window.startPause = 0;
         window.endPause = 0;
         document.addEventListener("visibilitychange", (e) => {
-            // if (document.hidden) {
-            //     window.startPause = performance.now() / 1000.0;
-            // } else {
-            //     window.endPause = performance.now() / 1000.0;
-            // }
+            if (document.hidden) {
+                window.startPause = performance.now() / 1000.0;
+            } else {
+                window.endPause = performance.now() / 1000.0;
+            }
         }, false);
 
-        ctx = new AudioContext();
+        // https://gist.github.com/kus/3f01d60569eeadefe3a1
+        {
+            audioContext = window.AudioContext || window.webkitAudioContext;
+            ctx = new audioContext();
+            var fixAudioContext = function (e) {
+                // Create empty buffer
+                var buffer = ctx.createBuffer(1, 1, 22050);
+                var source = ctx.createBufferSource();
+                source.buffer = buffer;
+                // Connect to output (speakers)
+                source.connect(ctx.destination);
+                // Play sound
+                if (source.start) {
+                    source.start(0);
+                } else if (source.play) {
+                    source.play(0);
+                } else if (source.noteOn) {
+                    source.noteOn(0);
+                }
+
+                // Remove events
+                document.removeEventListener('touchstart', fixAudioContext);
+                document.removeEventListener('touchend', fixAudioContext);
+            };
+            // iOS 6-8
+            document.addEventListener('touchstart', fixAudioContext);
+            // iOS 9
+            document.addEventListener('touchend', fixAudioContext);
+        }
 
         buffer_size = audio_buffer_size;
 
@@ -54,6 +82,19 @@ audio_register_js_plugin = function (importObject) {
 
     importObject.env.audio_sample_rate = function () {
         return ctx.sampleRate;
+    }
+
+    importObject.env.audio_pause_state = function () {
+        var duration = window.endPause - window.startPause;
+        if (duration > 0) {
+            window.endPause = 0;
+            window.startPause = 0;
+            return duration;
+        } else if (window.startPause > 0) {
+            return -1;
+        } else {
+            return 0.0;
+        }
     }
 }
 
