@@ -25,8 +25,6 @@ audio_register_js_plugin = function (importObject) {
             audioContext = window.AudioContext || window.webkitAudioContext;
             ctx = new audioContext();
             var fixAudioContext = function (e) {
-                console.log("fix");
-
                 // Create empty buffer
                 var buffer = ctx.createBuffer(1, 1, 22050);
                 var source = ctx.createBufferSource();
