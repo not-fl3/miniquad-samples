@@ -1,14 +1,10 @@
 var ctx = null;
 var buffer_size = 0;
-var memory;
 
-audio_set_mem = function (wasm_memory) {
-    memory = wasm_memory;
-}
-audio_register_js_plugin = function (importObject) {
+register_plugin = function (importObject) {
     importObject.env.audio_init = function (audio_buffer_size) {
         if (ctx != null) {
-            console.error("Already inited");
+            return;
         }
         window.startPause = 0;
         window.endPause = 0;
@@ -25,6 +21,8 @@ audio_register_js_plugin = function (importObject) {
             audioContext = window.AudioContext || window.webkitAudioContext;
             ctx = new audioContext();
             var fixAudioContext = function (e) {
+                console.log("fix");
+
                 // Create empty buffer
                 var buffer = ctx.createBuffer(1, 1, 22050);
                 var source = ctx.createBufferSource();
@@ -69,7 +67,7 @@ audio_register_js_plugin = function (importObject) {
         var buffer = ctx.createBuffer(2, buffer_size, ctx.sampleRate);
         var channel0 = buffer.getChannelData(0);
         var channel1 = buffer.getChannelData(1);
-        var obuf = new Float32Array(memory.buffer, buffer_ptr, buffer_size * 2);
+        var obuf = new Float32Array(wasm_memory.buffer, buffer_ptr, buffer_size * 2);
         for (var i = 0, j = 0; i < buffer_size * 2; i++) {
 
             channel0[i] = obuf[j++];
@@ -101,5 +99,4 @@ audio_register_js_plugin = function (importObject) {
     }
 }
 
-
-
+miniquad_add_plugin({ register_plugin });
