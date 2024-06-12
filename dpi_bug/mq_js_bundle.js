@@ -1481,29 +1481,6 @@ function add_missing_functions_stabs(obj) {
     }
 }
 
-function setup_resize_observer() {
-    const observer = new ResizeObserver(resizeTheCanvasToDisplaySize)
-    observer.observe(canvas);
-
-    function resizeTheCanvasToDisplaySize(entries) {
-        const entry = entries[0];
-        let width;
-        let height;
-        if (entry.devicePixelContentBoxSize) {
-            width = entry.devicePixelContentBoxSize[0].inlineSize;
-            height = entry.devicePixelContentBoxSize[0].blockSize;
-        } else if (entry.contentBoxSize) {
-            // fallback for Safari that will not always be correct
-            width = Math.round(entry.contentBoxSize[0].inlineSize * devicePixelRatio);
-            height = Math.round(entry.contentBoxSize[0].blockSize * devicePixelRatio);
-        }
-        canvas.width = width;
-        canvas.height = height;
-        console.log(height);
-        wasm_exports.resize(Math.floor(width), Math.floor(height));
-  }
-}
-
 function load(wasm_path) {
     var req = fetch(wasm_path);
 

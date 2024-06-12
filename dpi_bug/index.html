@@ -1,29 +1,82 @@
 <!doctype html>
 <html lang="en">
 
-<head>
+  <head>
     <meta charset="utf-8">
     <title>text</title>
     <style>
-        html,
-        body,
-        canvas {
-            margin: 0px;
-            padding: 0px;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            position: absolute;
-            background: black;
-            z-index: 0;
-        }
+      html,
+      body {
+          height: 100%;
+          margin: 0;
+          background-color: white;
+          font-family: monospace;
+          font-size: 16px;
+      }
+      #ui {
+          position: absolute;
+          left: 10px;
+          top: 10px;
+      }
+      #ui-inner {
+          padding: 1em;
+          background: #000;
+          color: white;
+          z-index: 2;
+      }
+      canvas {
+          width: 100%;
+          height: 100%;
+          display: block;
+      }
+      pre {
+          margin: 0.5em 0 0 0;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <canvas id="glcanvas" tabindex='1'></canvas>
-    <script src="mq_js_bundle.js"></script>
-    <script>load("a.wasm");</script>
-</body>
+    <script>
+      const canvas = document.querySelector("#glcanvas");
+      const gl = canvas.getContext("webgl");
+
+      gl.enable(0x0C11);
+
+      function draw() {
+          gl.scissor(0, 0, canvas.width, canvas.height);
+          gl.clearColor(0.0, 1.0, 0.0, 1.0)
+          gl.clear(0x00004000);
+          gl.scissor(50, 50, canvas.width - 100, canvas.height - 100);
+          gl.clearColor(1.0, 0.0, 0.0, 1.0)
+          gl.clear(0x00004000);
+      };
+
+      function setup_resize_observer() {
+          const observer = new ResizeObserver(resizeTheCanvasToDisplaySize)
+          observer.observe(canvas);
+
+          function resizeTheCanvasToDisplaySize(entries) {
+              const entry = entries[0];
+              let width;
+              let height;
+              if (entry.devicePixelContentBoxSize) {
+                  width = entry.devicePixelContentBoxSize[0].inlineSize;
+                  height = entry.devicePixelContentBoxSize[0].blockSize;
+              } else if (entry.contentBoxSize) {
+                  // fallback for Safari that will not always be correct
+                  width = Math.round(entry.contentBoxSize[0].inlineSize * devicePixelRatio);
+                  height = Math.round(entry.contentBoxSize[0].blockSize * devicePixelRatio);
+              }
+              canvas.width = width;
+              canvas.height = height;
+              console.log(height);
+              draw();
+          }
+      }
+
+      setup_resize_observer();
+    </script>
+  </body>
 
 </html>
