@@ -45,7 +45,6 @@
 
     gl.enable(0x0C11);
 
-
     let drawCount = 0;
     const drawFn = (displayWidth, displayHeight) => {
         canvas.width = displayWidth;
@@ -59,15 +58,6 @@
         gl.clear(0x00004000);
 
     };
-
-    const canvasToDisplaySizeMap = new Map([[canvas, [300, 150]]]);
-
-    function resizeAndDraw() {
-        const {width, height} = canvas.getBoundingClientRect();
-        const [displayWidth, displayHeight] = canvasToDisplaySizeMap.get(canvas);
-        drawFn(displayWidth, displayHeight);
-    }
-    resizeAndDraw();
 
     function onResize(entries) {
         for (const entry of entries) {
@@ -99,8 +89,7 @@
             }
             const displayWidth = Math.round(width * dpr);
             const displayHeight = Math.round(height * dpr);
-            canvasToDisplaySizeMap.set(entry.target, [displayWidth, displayHeight]);
-            resizeAndDraw();
+            drawFn(displayWidth, displayHeight);
         }
     }
 
