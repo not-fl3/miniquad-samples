@@ -1,4 +1,3 @@
-<!-- Licensed under a BSD license. See license.html for license -->
 <!DOCTYPE html>
 <html>
   <head>
@@ -37,15 +36,6 @@
   </head>
   <body>
     <canvas></canvas>
-    <div id="ui">
-      <div id="ui-inner">
-        <div><input type="radio" name="method" id="m0"><label for="m0">use round(clientWidth * dpr)</label></div>
-        <div><input type="radio" name="method" id="m1"><label for="m1">use round(getBoundingRect * dpr)</label></div>
-        <div><input type="radio" name="method" id="m2" checked><label for="m2">use ResizeObserver</label></div>
-        <div id="warning" style="color: red; display: none">(warning: no support for device-pixel-content-box)</div>
-        <pre id="info"></pre>
-      </div>
-    </div>
   </body>
   <script>
     'use strict';
@@ -72,64 +62,10 @@
 
     const canvasToDisplaySizeMap = new Map([[canvas, [300, 150]]]);
 
-    const methods = {
-        m0: () => {
-            const dpr = window.devicePixelRatio;
-            const displayWidth = Math.round(canvas.clientWidth * dpr);
-            const displayHeight = Math.round(canvas.clientHeight * dpr);
-            drawFn(displayWidth, displayHeight);
-        },
-        m1: () => {
-            const dpr = window.devicePixelRatio;
-            const {width, height} = canvas.getBoundingClientRect();
-            const displayWidth = Math.round(width * dpr);
-            const displayHeight = Math.round(height * dpr);
-            drawFn(displayWidth, displayHeight);
-        },
-        m2: () => {
-            const [displayWidth, displayHeight] = canvasToDisplaySizeMap.get(canvas);
-            drawFn(displayWidth, displayHeight);
-        },
-    };
-
-    document.querySelectorAll('input').forEach(elem => {
-        elem.addEventListener('change', resizeAndDraw);
-    });
-
-    const round = v => Math.round(v).toString().padStart(4);
-    const pad = v => v.toString().padEnd(18);
-
     function resizeAndDraw() {
-        const dpr = window.devicePixelRatio;
-
-        // attempt to keep the info box readable
-        // even as we zoom in/out
-        document.body.style.fontSize = `${18 / dpr}px`;
-        document.querySelectorAll('input').forEach(elem => {
-            elem.style.height = elem.style.width = `${18 / dpr}px`;
-        });
-
-        let id;
-        document.querySelectorAll('input').forEach(elem => {
-            if (elem.checked) {
-                id = elem.id;
-            }
-        });
-
         const {width, height} = canvas.getBoundingClientRect();
-        const [observerWidth, observerHeight] = canvasToDisplaySizeMap.get(canvas);
-        document.querySelector('#info').textContent = `devicePixelRatio: ${dpr}
-
-${id}              | round(*dpr), raw
-----------------+------------+-------
-clientWidth     | ${round(canvas.clientWidth * dpr)}, ${canvas.clientWidth}
-clientHeight    | ${round(canvas.clientHeight * dpr)}, ${canvas.clientHeight}
-gbcr().width    | ${round(width * dpr)}, ${pad(width)}
-gbcr().height   | ${round(height * dpr)}, ${pad(height)}
-observer.width  | ${round(observerWidth)}
-observer.height | ${round(observerHeight)}`;
-
-        methods[id]();
+        const [displayWidth, displayHeight] = canvasToDisplaySizeMap.get(canvas);
+        drawFn(displayWidth, displayHeight);
     }
     resizeAndDraw();
 
@@ -165,9 +101,6 @@ observer.height | ${round(observerHeight)}`;
             const displayHeight = Math.round(height * dpr);
             canvasToDisplaySizeMap.set(entry.target, [displayWidth, displayHeight]);
             resizeAndDraw();
-            if (!dprSupport) {
-                document.querySelector('#warning').style.display = '';
-            }
         }
     }
 
@@ -175,5 +108,3 @@ observer.height | ${round(observerHeight)}`;
     resizeObserver.observe(canvas, {box: 'content-box'});
   </script>
 </html>
-
-
